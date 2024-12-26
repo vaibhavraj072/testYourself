@@ -1,25 +1,61 @@
-const express = require('express');
-const Question = require('./questionModel');
-require('./db');
+const express = require("express");
+const mongoose = require("mongoose");
+const Question = require("./models/Question");
+const path = require("path");
+require("dotenv").config();
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 5000;
 
-// Serve frontend files
-app.use(express.static('public'));
+// Middleware
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "../public")));
 
-// API to fetch 5 random questions
-app.get('/api/questions', async (req, res) => {
+// MongoDB Connection
+mongoose
+  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => console.error(err));
+
+// API to Add Questions
+app.post("/api/questions", async (req, res) => {
   try {
-    const questions = await Question.aggregate([{ $sample: { size: 5 } }]);
-    res.json(questions);
-  } catch (error) {
-    console.error('Error fetching questions:', error);
-    res.status(500).send('Server error');
+    const question = new Question(req.body);
+    await question.save();
+    res.status(201).json({ message: "Question added" });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+// API to Get Questions
+app.get("/api/questions", async (req, res) => {
+  try {
+    const questions = await Question.find();
+    res.json(questions);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
+
+// API to Evaluate Answers
+app.post("/api/evaluate", async (req, res) => {
+  try {
+    const { responses } = req.body;
+    let score = 0;
+
+    for (const response of responses) {
+      const question = await Question.findById(response.id);
+      if (question && question.answer === response.answer) {
+        score++;
+      }
+    }
+
+    res.json({ score });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Server Listener
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

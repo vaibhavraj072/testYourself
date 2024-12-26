@@ -1,14 +1,10 @@
-const mongoose = require('./db');
+const mongoose = require('mongoose');
 
-// Define schema for questions
 const questionSchema = new mongoose.Schema({
-  chapter: String,
-  question: String,
+  text: String,
   options: [String],
   answer: String,
+  category: String,
 });
 
-// Create and export the model
-const Question = mongoose.model('Question', questionSchema);
-
-module.exports = Question;
+module.exports = mongoose.model('Question', questionSchema);

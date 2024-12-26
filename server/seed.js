@@ -1,28 +1,19 @@
+const mongoose = require('mongoose');
 const Question = require('./questionModel');
 
-// Sample questions
-const questions = [
-  {
-    chapter: 'Reproduction in Animals',
-    question: 'What is reproduction?',
-    options: ['Growth', 'Respiration', 'Producing offspring', 'Digestion'],
-    answer: 'Producing offspring',
-  },
-  // Add more questions here...
-];
+mongoose.connect('mongodb://127.0.0.1:27017/quizDB', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
-// Insert questions into the database
-async function seedQuestions() {
-  try {
-    await Question.deleteMany({});
-    await Question.insertMany(questions);
-    console.log('Questions seeded successfully');
-    process.exit();
-  } catch (error) {
-    console.error('Error seeding questions:', error);
-    process.exit(1);
-  }
+const questions = [ /* Paste the question array from above here */ ];
+
+async function seedDB() {
+  await Question.deleteMany({});
+  await Question.insertMany(questions);
+  console.log('Database seeded!');
+  mongoose.connection.close();
 }
 
-seedQuestions();
-    
+seedDB();
+
