@@ -138,7 +138,8 @@ const seedQuestions = async () => {
       answer: "Bird",
       category: "Biology",
     },
-  ];  
+  ];
+  
 
   try {
     await connectDB();
