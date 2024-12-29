@@ -3,16 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Digital Exam - Test</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="styles.css">
+  <title>Online Test</title>
 </head>
 <body>
-  <div class="container">
-    <h1>Digital Exam</h1>
-    <h2>Reproduction Quiz</h2>
-    <form id="quizForm"></form>
-    <button id="submitQuiz">Submit Quiz</button>
-    <div id="result"></div>
+  <div id="test-container">
+    <form id="test-form">
+      <div id="questions"></div>
+      <button type="button" onclick="submitTest()">Submit</button>
+    </form>
   </div>
   <script src="script.js"></script>
 </body>

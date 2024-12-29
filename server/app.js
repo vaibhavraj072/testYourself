@@ -1,61 +1,50 @@
 const express = require("express");
+<<<<<<< Updated upstream
 const mongoose = require("mongoose");
 const Question = require('server\\question.js');
 const path = require("path");
 require("dotenv").config();
+=======
+const cors = require("cors");
+const connectDB = require("./db");
+const Question = require("./questionModel");
+>>>>>>> Stashed changes
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = 3000;
 
-// Middleware
+app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "../public")));
 
-// MongoDB Connection
-mongoose
-  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error(err));
+connectDB();
 
-// API to Add Questions
-app.post("/api/questions", async (req, res) => {
-  try {
-    const question = new Question(req.body);
-    await question.save();
-    res.status(201).json({ message: "Question added" });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-// API to Get Questions
 app.get("/api/questions", async (req, res) => {
   try {
-    const questions = await Question.find();
+    const questions = await Question.aggregate([{ $sample: { size: 10 } }]);
     res.json(questions);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 
-// API to Evaluate Answers
-app.post("/api/evaluate", async (req, res) => {
+app.post("/api/submit", async (req, res) => {
   try {
-    const { responses } = req.body;
+    const { answers } = req.body;
     let score = 0;
 
-    for (const response of responses) {
-      const question = await Question.findById(response.id);
-      if (question && question.answer === response.answer) {
+    for (const [questionId, userAnswer] of Object.entries(answers)) {
+      const question = await Question.findById(questionId);
+      if (question && question.answer === userAnswer) {
         score++;
       }
     }
 
-    res.json({ score });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.json({ score, total: Object.keys(answers).length });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 
-// Server Listener
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+});

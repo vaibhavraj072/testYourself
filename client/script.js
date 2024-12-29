@@ -1,42 +1,60 @@
-// Load Questions
-async function loadQuestions() {
-  const response = await fetch("/api/questions");
-  const questions = await response.json();
-  const form = document.getElementById("quizForm");
+let questions = [];
 
-  questions.forEach((q, index) => {
-    const div = document.createElement("div");
-    div.innerHTML = `
-      <p><strong>Q${index + 1}: ${q.text}</strong></p>
-      ${q.options
-        .map(
-          (option, i) =>
-            `<label>
-              <input type="radio" name="question-${q._id}" value="${option}" />
-              ${option}
-            </label><br/>`
-        )
-        .join("")}
-    `;
-    form.appendChild(div);
+const loadQuestions = async () => {
+  try {
+    const response = await fetch("http://localhost:3000/api/questions");
+    questions = await response.json();
+
+    const questionContainer = document.getElementById("questions");
+    questionContainer.innerHTML = "";
+
+    questions.forEach((question, index) => {
+      const questionHTML = `
+        <div>
+          <p>${index + 1}. ${question.text}</p>
+          ${question.options
+            .map(
+              (option) => `
+                <label>
+                  <input type="radio" name="question${question._id}" value="${option}" />
+                  ${option}
+                </label>
+              `
+            )
+            .join("")}
+        </div>
+      `;
+      questionContainer.innerHTML += questionHTML;
+    });
+  } catch (error) {
+    console.error("Error loading questions:", error.message);
+  }
+};
+
+const submitTest = async () => {
+  const answers = {};
+  questions.forEach((question) => {
+    const selectedOption = document.querySelector(
+      `input[name="question${question._id}"]:checked`
+    );
+    if (selectedOption) {
+      answers[question._id] = selectedOption.value;
+    }
   });
-}
 
-// Submit Quiz
-document.getElementById("submitQuiz").addEventListener("click", async () => {
-  const responses = [];
-  document.querySelectorAll("form input[type='radio']:checked").forEach((input) => {
-    responses.push({ id: input.name.split("-")[1], answer: input.value });
-  });
-
-  const response = await fetch("/api/evaluate", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ responses }),
-  });
-
-  const result = await response.json();
-  document.getElementById("result").innerText = `Your Score: ${result.score}`;
-});
+  try {
+    const response = await fetch("http://localhost:3000/api/submit", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ answers }),
+    });
+    const result = await response.json();
+    alert(`You scored ${result.score} out of ${result.total}`);
+  } catch (error) {
+    console.error("Error submitting test:", error.message);
+  }
+};
 
 loadQuestions();
