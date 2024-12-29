@@ -1,14 +1,7 @@
 const express = require("express");
-<<<<<<< Updated upstream
-const mongoose = require("mongoose");
-const Question = require('server\\question.js');
-const path = require("path");
-require("dotenv").config();
-=======
 const cors = require("cors");
 const connectDB = require("./db");
 const Question = require("./questionModel");
->>>>>>> Stashed changes
 
 const app = express();
 const PORT = 3000;
